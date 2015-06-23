@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+        <!-- Babylon.js -->
+        <script src="http://www.babylonjs.com/hand.minified-1.2.js"></script>
+        <script src="http://www.babylonjs.com/cannon.js"></script>
+        <script src="http://www.babylonjs.com/oimo.js"></script>
+        <script src="http://www.babylonjs.com/babylon.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+        var scene = new BABYLON.Scene(engine);
+        
+        // Caméra rotative
+        var camera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+        
+        // Contrôle utilisateur de la caméra
+        camera.attachControl(canvas, false);
+        
+        // Position de la camera
+        camera.setPosition(new BABYLON.Vector3(0,4, -8));
+        
+        // Eclairage
+        var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+        
+
+        function getMiddleOfSegment(pA, pB){
+            return [(pA[0]+pB[0])/2, (pA[1]+pB[1])/2, (pA[2]+pB[2])/2];
+        }
+
+        function getLineChaikinPositionsVector3(linePositions, iteration){
+
+           var lineChaikinPositions = [];
+           for(var i=0; i<linePositions.length; i++){
+                if(i+1 < linePositions.length){
+                    var middle = getMiddleOfSegment(linePositions[i],linePositions[i+1]);
+                    var firstQuart = getMiddleOfSegment(linePositions[i],middle);
+                    var lastQuart = getMiddleOfSegment(middle,linePositions[i+1]);
+                    if(i<1){
+                        lineChaikinPositions.push(linePositions[i]);
+                    }
+                    lineChaikinPositions.push(firstQuart);
+                    lineChaikinPositions.push(lastQuart);
+                }
+                else{
+                    lineChaikinPositions.push(linePositions[i]);
+                }
+            }
+
+           if(iteration>1){
+            return getLineChaikinPositionsVector3(lineChaikinPositions, iteration-1);
+           } else{
+            var lineChaikinPositionsVector3 = [];
+            for(var i=0; i<lineChaikinPositions.length; i++){
+                lineChaikinPositionsVector3.push(new BABYLON.Vector3(lineChaikinPositions[i][0], lineChaikinPositions[i][1], lineChaikinPositions[i][2]));
+            }
+            return lineChaikinPositionsVector3;
+           }
+           
+       }
+
+
+
+        // Création de la ligne de base (avant Chaikin)
+        var linePositions = [
+            [0, 0, 0],
+            [2, 4, 0],
+            [5, -2, 0],
+            [9, 2, 0],
+            [11, 1, 0]];
+
+
+        var linePositionsVector3 = [];
+        for(var i=0; i<linePositions.length; i++){
+            linePositionsVector3.push(new BABYLON.Vector3(linePositions[i][0], linePositions[i][1], linePositions[i][2]));
+        }
+
+       var lines = BABYLON.Mesh.CreateLines("lines", linePositionsVector3, scene);
+       
+
+
+       // Création de la ligne de Chaikin 
+       var lineChaikinPositionsVector3 = getLineChaikinPositionsVector3(linePositions,3);
+       var linesChaikin = BABYLON.Mesh.CreateLines("lines", lineChaikinPositionsVector3, scene);
+       linesChaikin.color = new BABYLON.Color3(1.0, 0.2, 0.7);
+
+      
+        
+
+
+
+
+    // Création des grids
+    var grid = BABYLON.Mesh.CreateGround("Grid", 10, 10, 10, scene);
+    var gridMaterial = new BABYLON.StandardMaterial("Grid Material", scene);
+    gridMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    gridMaterial.wireframe = true;
+    grid.material = gridMaterial;
+    grid.rotation.x = Math.PI/2;
+
+    var grid = BABYLON.Mesh.CreateGround("Grid", 10, 10, 10, scene);
+    var gridMaterial = new BABYLON.StandardMaterial("Grid Material", scene);
+    gridMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    gridMaterial.wireframe = true;
+    grid.material = gridMaterial;
+    grid.position.z = 0;
+    grid.position.y = 0;
+
+
+
+
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+    // Gestion des évènements 
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+
+
+        var lastPosition;
+
+
+        window.addEventListener("mousemove", function (evt) {
+           // We try to pick an object
+           lastPosition = scene.pick(evt.clientX, evt.clientY);
+        });
+
+        window.addEventListener("keyup", function (evt) {
+           // We try to pick an object
+           
+
+
+        });
+
+
+    </script>
+</body>
+</html>

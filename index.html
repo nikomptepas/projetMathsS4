@@ -28,6 +28,9 @@
 <body>
     <canvas id="renderCanvas"></canvas>
     <script>
+
+    var matrice3 = [[]];
+
         
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
@@ -43,11 +46,22 @@
         camera.setPosition(new BABYLON.Vector3(0,4, -8));
         
         // Eclairage
-        var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+        var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(1, 1,1), scene);
         
 
         function getMiddleOfSegment(pA, pB){
             return [(pA[0]+pB[0])/2, (pA[1]+pB[1])/2, (pA[2]+pB[2])/2];
+        }
+
+        function drawLineWithPositions(positions){
+
+            var linePositionsVector3 = [];
+            for(var i=0; i<positions.length; i++){
+                linePositionsVector3.push(new BABYLON.Vector3(positions[i][0], positions[i][1], positions[i][2]));
+            }
+
+           var lines = BABYLON.Mesh.CreateLines("lines", linePositionsVector3, scene);
+           return lines;
         }
 
         function getLineChaikinPositionsVector3(linePositions, iteration){
@@ -55,14 +69,20 @@
            var lineChaikinPositions = [];
            for(var i=0; i<linePositions.length; i++){
                 if(i+1 < linePositions.length){
-                    var middle = getMiddleOfSegment(linePositions[i],linePositions[i+1]);
-                    var firstQuart = getMiddleOfSegment(linePositions[i],middle);
-                    var lastQuart = getMiddleOfSegment(middle,linePositions[i+1]);
+                   
+                    var u = 0.25;
+                    var v = 0.25;
+
+                    var firstCount = [linePositions[i][0]*(1-u)+linePositions[i+1][0]*u, linePositions[i][1]*(1-u)+linePositions[i+1][1]*u, linePositions[i][2]*(1-u)+linePositions[i+1][2]*u];
+                    var lastCount = [linePositions[i+1][0]*(1-v)+linePositions[i][0]*v, linePositions[i+1][1]*(1-v)+linePositions[i][1]*v, linePositions[i+1][2]*(1-v)+linePositions[i][2]*v];
+
                     if(i<1){
                         lineChaikinPositions.push(linePositions[i]);
                     }
-                    lineChaikinPositions.push(firstQuart);
-                    lineChaikinPositions.push(lastQuart);
+
+                    lineChaikinPositions.push(firstCount);
+                    lineChaikinPositions.push(lastCount);
+
                 }
                 else{
                     lineChaikinPositions.push(linePositions[i]);
@@ -72,17 +92,46 @@
            if(iteration>1){
             return getLineChaikinPositionsVector3(lineChaikinPositions, iteration-1);
            } else{
-            var lineChaikinPositionsVector3 = [];
-            for(var i=0; i<lineChaikinPositions.length; i++){
-                lineChaikinPositionsVector3.push(new BABYLON.Vector3(lineChaikinPositions[i][0], lineChaikinPositions[i][1], lineChaikinPositions[i][2]));
-            }
-            return lineChaikinPositionsVector3;
+                return lineChaikinPositions;
+                //    return drawLineWithPositions(lineChaikinPositions);
            }
            
        }
 
+       function drawPlaneWith4Vertices(tab) { 
+
+              var plane = new BABYLON.Mesh('plane', scene);
+              var positions = tab;
+              var normals = [
+                1, 1, 1,
+                1, 1, 1,
+                1, 1, 1,
+                1, 1, 1
+              ];
+
+            var indices = [];
+            indices.push(0);
+            indices.push(1);
+            indices.push(2);
+
+            indices.push(0);
+            indices.push(2);
+            indices.push(3);
+
+            plane.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind);
+            plane.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind);
+            plane.setIndices(indices);
+
+            plane.material = new BABYLON.StandardMaterial("Plane Material", scene);
+            plane.material.backFaceCulling = false;
+        
+          return plane;
+        }
 
 
+
+
+       /*
         // Création de la ligne de base (avant Chaikin)
         var linePositions = [
             [0, 0, 0],
@@ -91,50 +140,49 @@
             [9, 2, 0],
             [11, 1, 0]];
 
-
-        var linePositionsVector3 = [];
-        for(var i=0; i<linePositions.length; i++){
-            linePositionsVector3.push(new BABYLON.Vector3(linePositions[i][0], linePositions[i][1], linePositions[i][2]));
-        }
-
-       var lines = BABYLON.Mesh.CreateLines("lines", linePositionsVector3, scene);
        
 
 
        // Création de la ligne de Chaikin 
-       var lineChaikinPositionsVector3 = getLineChaikinPositionsVector3(linePositions,3);
-       var linesChaikin = BABYLON.Mesh.CreateLines("lines", lineChaikinPositionsVector3, scene);
+       var linesChaikin = getLineChaikinPositionsVector3(linePositions,3);
        linesChaikin.color = new BABYLON.Color3(1.0, 0.2, 0.7);
 
-      
+
+        */
         
 
 
 
 
     // Création des grids
-    var grid = BABYLON.Mesh.CreateGround("Grid", 10, 10, 10, scene);
-    var gridMaterial = new BABYLON.StandardMaterial("Grid Material", scene);
-    gridMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-    gridMaterial.wireframe = true;
-    grid.material = gridMaterial;
-    grid.rotation.x = Math.PI/2;
+    var gridXY = BABYLON.Mesh.CreateGround("Grid", 30, 30, 30, scene);
+    var gridXYMaterial = new BABYLON.StandardMaterial("Grid Material", scene);
+    gridXYMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0);
+    gridXYMaterial.wireframe = true;
+    gridXY.material = gridXYMaterial;
+    gridXY.rotation.x = Math.PI/2;
+    gridXYMaterial.alpha = 1;
+    gridXYMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
 
-    var grid = BABYLON.Mesh.CreateGround("Grid", 10, 10, 10, scene);
-    var gridMaterial = new BABYLON.StandardMaterial("Grid Material", scene);
-    gridMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-    gridMaterial.wireframe = true;
-    grid.material = gridMaterial;
-    grid.position.z = 0;
-    grid.position.y = 0;
+    var gridZ = BABYLON.Mesh.CreateGround("Grid", 30, 30, 30, scene);
+    var gridZMaterial = new BABYLON.StandardMaterial("Grid Material", scene);
+    gridZMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
+    gridZMaterial.wireframe = true;
+    gridZ.material = gridZMaterial;
+    gridZ.position.z = 0;
+    gridZ.position.y = 0;
+    gridZMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    gridZMaterial.alpha = 0;
 
 
 
-
-        engine.runRenderLoop(function () {
+    // Boucle de jeu
+    engine.runRenderLoop(function () {
             scene.render();
         });
 
+
+        
     // Gestion des évènements 
 
         // Resize
@@ -143,20 +191,500 @@
         });
 
 
-        var lastPosition;
+
+
+
+        var lastPosition = {
+            x: 0,
+            y: 0,
+            z: 0
+        }
+
+        var currentSphere = null;
+        var addingPoint = 0;
+        var currentLine = [];
+
+        var currentLineColors = [];
+        currentLineColors[0] = new BABYLON.Color3(1.0, 1.0, 0);
+        currentLineColors[1] = new BABYLON.Color3(0, 1.0, 1.0);
+        currentLineColors[2] = new BABYLON.Color3(1.0, 0, 1.0);
+        currentLineColors[3] = new BABYLON.Color3(0, 1.0, 0);
 
 
         window.addEventListener("mousemove", function (evt) {
            // We try to pick an object
-           lastPosition = scene.pick(evt.clientX, evt.clientY);
-        });
 
-        window.addEventListener("keyup", function (evt) {
-           // We try to pick an object
+
+           if(addingPoint==0){
            
+           }else{
+            if(addingPoint==1){
+                if(edge%2==0)
+                {
+                    currentSphere.position.z = Math.round(scene.pick
+                        (evt.clientX, evt.clientY).pickedPoint.z);
+                }
+                else{
+                    currentSphere.position.x = Math.round(scene.pick(evt.clientX, evt.clientY).pickedPoint.x);
+                }
+                currentSphere.position.y =  Math.round(scene.pick(evt.clientX, evt.clientY).pickedPoint.y);
 
+                    if(refreshLine){
+                        // Afficher la ligne
+                        currentLinePositionCurrent = currentLinePosition[edge-1][currentLinePosition[edge-1].length-1];
+                        currentLinePositionCurrent[0] = currentSphere.position.x;
+                        currentLinePositionCurrent[1] = currentSphere.position.y;
+                        currentLinePositionCurrent[2] = currentSphere.position.z;
+                        if(currentLine[edge-1] != undefined){
+                            currentLine[edge-1].dispose();
+                        }
+                        currentLine[edge-1] = drawLineWithPositions(currentLinePosition[edge-1]);
+                        currentLine[edge-1].color = currentLineColors[edge-1];
+                        
+                        
+                    }
+                    
+            }else{
+                if(edge%2==0)
+                {
+                    currentSphere.position.x = Math.round(scene.pick(evt.clientX, evt.clientY).pickedPoint.x);
+                }
+                else{
+                    currentSphere.position.z = Math.round(scene.pick(evt.clientX, evt.clientY).pickedPoint.z);
+                }
+                currentLinePositionCurrent = currentLinePosition[edge-1][currentLinePosition[edge-1].length-1];
+                currentLinePositionCurrent[0] = currentSphere.position.x;
+                currentLinePositionCurrent[1] = currentSphere.position.y;
+                currentLinePositionCurrent[2] = currentSphere.position.z;
+                if(currentLine[edge-1] != undefined){
+                    currentLine[edge-1].dispose();
+                }
+                currentLine[edge-1] = drawLineWithPositions(currentLinePosition[edge-1]);
+                currentLine[edge-1].color = currentLineColors[edge-1];
+                
+            }
+            
+           }
 
         });
+
+        var sphereMaterial = new BABYLON.StandardMaterial("Sphere Material", scene);
+        var sphereMaterialCurrent = new BABYLON.StandardMaterial("Sphere Current Material", scene);
+
+        var currentLinePosition = [[]];
+        currentLinePosition[0][0] = [0,0,0];
+
+        
+
+        var edge = 1;
+
+        camera.alpha = Math.PI + Math.PI/2;
+        camera.beta = Math.PI/4;
+
+
+
+
+
+        
+
+
+        window.addEventListener("keyup", function (e) {
+            
+            // We try to pick an object
+            if ((e.keyCode || e.which) == 65) {
+                if(addingPoint == 0){
+
+                    gridXYMaterial.alpha = 1;
+                    currentSphere = BABYLON.Mesh.CreateSphere("sphere", 2, 2, scene);
+                    currentSphere.scaling = new BABYLON.Vector3(0.2,0.2,0.2);
+                    currentSphere.material = sphereMaterialCurrent;
+                    sphereMaterialCurrent.diffuseColor = new BABYLON.Color3(0, 1, 0);
+
+
+                    currentSphere.position.x = lastPosition.x;
+                    currentSphere.position.z = gridXY.position.z;
+                    
+                    currentSphere.position.y = lastPosition.y;
+
+                    currentLinePosition[edge-1].push([currentSphere.position.x, currentSphere.position.y, currentSphere.position.z]);
+                    refreshLine = true;
+                    addingPoint = 1;
+
+
+                
+                }else if (addingPoint == 1){
+                    gridZ.position.y = currentSphere.position.y;
+                    gridXYMaterial.alpha = 0;
+                    gridZMaterial.alpha = 1;
+                    addingPoint = 2;
+
+                    gridXY.position.y = currentSphere.position.y;
+                    gridXY.position.x = currentSphere.position.x;
+                    gridXY.position.z = currentSphere.position.z;
+
+                    gridZ.position.y = currentSphere.position.y;
+                    gridZ.position.x = currentSphere.position.x;
+                    gridZ.position.z = currentSphere.position.z;
+                    
+
+                } else if(addingPoint == 2){
+                    refreshLine = false;
+                    gridXYMaterial.alpha = 1;
+                    gridZMaterial.alpha = 0;
+                    currentSphere.material = sphereMaterial;
+                    addingPoint = 0;
+                    camera.target = currentSphere.position;
+                    
+                    gridXY.position.y = currentSphere.position.y;
+                    gridXY.position.x = currentSphere.position.x;
+                    gridXY.position.z = currentSphere.position.z;
+
+                    gridZ.position.y = currentSphere.position.y;
+                    gridZ.position.x = currentSphere.position.x;
+                    gridZ.position.z = currentSphere.position.z;
+
+
+                    lastPosition.x = currentSphere.position.x;
+                    lastPosition.y = currentSphere.position.y;
+                    lastPosition.z = currentSphere.position.z;
+
+                    currentSphere.dispose();
+
+
+
+                }   
+
+                currentLinePosition[edge-1].color = currentLineColors[edge-1];
+            
+                //currentLinePosition[edge-1].push([currentSphere.position.x, currentSphere.position.y, currentSphere.position.z]);
+            }
+
+
+            if ((e.keyCode || e.which) == 66) {
+                
+                console.log(camera);
+                edge++;
+                console.log(edge);
+
+                if(edge > 3){
+
+                    console.log("edddddgggggggeee");
+
+                    if(currentLinePosition.length){
+                        //
+                    }
+
+
+                    console.log(edge-2);
+                    console.log(currentLinePosition);
+                    currentLinePosition[edge-1].push([0,0,0]);
+
+                    
+                    for (var i = 0; i < currentLinePosition.length-1; i++) {
+                        if(i < currentLine.count-1){
+                            currentLine[i].dispose();
+                        }
+                        else{
+                            currentLine.push([]);
+                        }
+                        
+                        var chaikinPositions =  getLineChaikinPositionsVector3(currentLinePosition[i],3);
+                        currentLine[i] = drawLineWithPositions(chaikinPositions);
+                        currentLine[i].color = currentLineColors[i];
+                    }
+                    return;
+                    
+                }
+
+
+                if(currentLinePosition.length < edge){
+                    currentLinePosition.push([]);
+                }
+                currentLinePosition[edge-1].push([currentSphere.position.x, currentSphere.position.y, currentSphere.position.z]);
+
+
+                if(edge%2==0)
+                    {
+                        gridXY.rotation.z = Math.PI/2;
+                        camera.alpha = Math.PI;
+                    }
+                    else{
+                        camera.alpha = Math.PI + Math.PI/2;
+                        gridXY.rotation.z = Math.PI;
+                    }
+
+
+
+
+            }
+
+            if((e.keyCode || e.which) == 67){
+                currentLinePosition[0] = [];
+                currentLinePosition[0][0] = [0,0,0];
+                currentLinePosition[0][1] = [2,2,-1];
+                currentLinePosition[0][2] = [7,3,-1];
+
+                currentLinePosition[1] = [];
+                currentLinePosition[1][0] = [7,3,-1];
+                currentLinePosition[1][1] = [6,5,-5];
+                currentLinePosition[1][2] = [7,7,-8];
+
+                currentLinePosition[2] = [];
+                currentLinePosition[2][0] = [7,7,-8];
+                currentLinePosition[2][1] = [5,8,-9];
+                currentLinePosition[2][2] = [2,9,-13];
+
+                currentLinePosition[2].reverse();
+
+                currentLinePosition[3] = [];
+                currentLinePosition[3][0] = [2,9,-13];
+                currentLinePosition[3][1] = [-4,9,-6];
+                currentLinePosition[3][2] = [0,0,0];
+
+                currentLinePosition[3].reverse();
+
+                linePositionsChaikin = [];
+                linePositionsChaikin[0] = [];
+                linePositionsChaikin[1] = [];
+                linePositionsChaikin[2] = [];
+                linePositionsChaikin[3] = [];
+
+                for (var i = 0; i < currentLinePosition.length; i++) {
+                    linePositionsChaikin[i] = getLineChaikinPositionsVector3(currentLinePosition[i],3);
+                    currentLine[i] = drawLineWithPositions(linePositionsChaikin[i]);
+                    currentLine[i].color = currentLineColors[i];
+                }
+
+
+                var TopToBottomPositions = [];
+                var v = 0;
+                var u = 0;
+
+                var matrice1 = [[]];
+
+                
+                // Matrice1
+                for(var i = 0; i < linePositionsChaikin[0].length; i++){
+
+                    TopToBottomPositions.push(linePositionsChaikin[0][i]);
+                    matrice1[0][i] = linePositionsChaikin[0][i];
+
+                    for(var j = 1; j < linePositionsChaikin[1].length-1; j++){
+
+                        v = j/(linePositionsChaikin[1].length-1);
+
+                        var point = [linePositionsChaikin[0][i][0]*(1-v)+linePositionsChaikin[2][i][0]*v,
+                                     linePositionsChaikin[0][i][1]*(1-v)+linePositionsChaikin[2][i][1]*v, 
+                                     linePositionsChaikin[0][i][2]*(1-v)+linePositionsChaikin[2][i][2]*v];
+                        
+                        
+            
+                        if(j>matrice1.length-1){
+                            matrice1[j] = [];
+                        }
+                        matrice1[j][i] = point;
+                        
+                    }
+
+                    if(linePositionsChaikin[1].length-1>matrice1.length-1){
+                        matrice1[linePositionsChaikin[1].length-1] = [];
+                    }
+
+
+                    matrice1[linePositionsChaikin[1].length-1][i] = linePositionsChaikin[2][i];            
+                }
+
+
+
+
+                // Draw matrice1
+                /*
+                for (var i = 0; i < matrice1[0].length; i++) {
+
+                    for (var j = 0; j < matrice1.length; j++) {
+                        currentSphere = BABYLON.Mesh.CreateSphere("sphere", 2, 2, scene);
+                        currentSphere.scaling = new BABYLON.Vector3(0.2,0.2,0.2);
+                        currentSphere.position.x = matrice1[i][j][0];
+                        currentSphere.position.y = matrice1[i][j][1];
+                        currentSphere.position.z = matrice1[i][j][2];
+                    };
+                };
+                */
+                
+
+
+                var matrice2 = [[]];
+
+                for (var i=0; i<matrice1[0].length; i++) {
+                  matrice2[i]= [];
+                    
+                  for (var j=0; j<matrice1.length; j++) {
+                     matrice2[i][j]= [0,0,0];
+                  }
+                }
+
+
+                // Matrice2
+                for(var j = 0; j < linePositionsChaikin[3].length; j++){
+
+                    matrice2[j][0] = linePositionsChaikin[3][j];
+
+                    for(var i = 1; i < linePositionsChaikin[0].length-1; i++){
+
+                        u = i/(linePositionsChaikin[0].length-1);
+
+                        var point = [linePositionsChaikin[3][j][0]*(1-u)+linePositionsChaikin[1][j][0]*u,
+                                     linePositionsChaikin[3][j][1]*(1-u)+linePositionsChaikin[1][j][1]*u, 
+                                     linePositionsChaikin[3][j][2]*(1-u)+linePositionsChaikin[1][j][2]*u];
+                        
+                        matrice2[j][i] = point;
+                        
+                    }
+
+                    matrice2[j][linePositionsChaikin[0].length-1] = linePositionsChaikin[1][j];            
+                }
+
+
+
+                // Draw matrice2
+                
+                /*
+                for (var i = 0; i < matrice1[0].length; i++) {
+
+                    for (var j = 0; j < matrice1.length; j++) {
+                        currentSphere = BABYLON.Mesh.CreateSphere("sphere", 2, 2, scene);
+                        currentSphere.scaling = new BABYLON.Vector3(0.2,0.2,0.2);
+                        currentSphere.position.x = matrice2[i][j][0];
+                        currentSphere.position.y = matrice2[i][j][1];
+                        currentSphere.position.z = matrice2[i][j][2];
+                    };
+                };
+                */
+                
+                
+                
+                
+
+
+                                
+
+                
+
+                
+
+                for (var i=0; i<matrice1[0].length; i++) {
+                  matrice3[i]= [];
+                    
+                  for (var j=0; j<matrice1.length; j++) {
+                     matrice3[i][j]= [0,0,0];
+                  }
+                }
+                
+
+                for (var i = 0; i < matrice1[0].length; i++) {
+
+                    u = i/(linePositionsChaikin[1].length-1);
+
+                    for (var j = 0; j < matrice1.length; j++) {
+
+                        
+                        v = j/(linePositionsChaikin[0].length-1);
+
+                        var NpX  = (1-v)*linePositionsChaikin[2][0][0]+v*linePositionsChaikin[2][linePositionsChaikin[2].length-1][0];
+                        var NpY  = (1-v)*linePositionsChaikin[2][0][1]+v*linePositionsChaikin[2][linePositionsChaikin[2].length-1][1];
+                        var NpZ  = (1-v)*linePositionsChaikin[2][0][2]+v*linePositionsChaikin[2][linePositionsChaikin[2].length-1][2];
+
+                        var MpX  = (1-v)*linePositionsChaikin[0][0][0]+v*linePositionsChaikin[0][linePositionsChaikin[0].length-1][0];
+                        var MpY  = (1-v)*linePositionsChaikin[0][0][1]+v*linePositionsChaikin[0][linePositionsChaikin[0].length-1][1];
+                        var MpZ  = (1-v)*linePositionsChaikin[0][0][2]+v*linePositionsChaikin[0][linePositionsChaikin[0].length-1][2];
+
+                        var theFormuleX = u*NpX+(1-u)*MpX;
+                        var theFormuleY = u*NpY+(1-u)*MpY;
+                        var theFormuleZ = u*NpZ+(1-u)*MpZ;
+
+                        var point = [matrice1[i][j][0]+matrice2[i][j][0] - theFormuleX,
+                                     matrice1[i][j][1]+matrice2[i][j][1] - theFormuleY, 
+                                     matrice1[i][j][2]+matrice2[i][j][2] - theFormuleZ];
+
+
+                        matrice3[i][j] = point;
+
+
+                    };
+                };
+
+
+
+
+
+
+
+                
+                
+
+               
+                
+                
+                
+
+                
+                
+
+                /*
+                for(var i = 0; i < linePositionsChaikin[1].length; i++){
+                    var d = drawLineWithPositions([linePositionsChaikin[1][i],linePositionsChaikin[3][linePositionsChaikin[1].length-1-i]]);
+                }
+                */
+
+            }
+
+
+            if ((e.keyCode || e.which) == 68) {
+                
+                // Draw matrice3 Wireframe 
+                
+                for (var i = 0; i < matrice3[0].length; i++) {
+
+                    for (var j = 0; j < matrice3.length; j++) {
+
+                        if(j+1 < matrice3.length){
+                            drawLineWithPositions([matrice3[i][j],matrice3[i][j+1]]);
+                        }
+                    };
+                };
+                for (var j = 0; j < matrice3.length; j++) {
+
+                    for (var i = 0; i < matrice3[0].length; i++) {
+                        if(i+1 < matrice3[0].length){
+                            drawLineWithPositions([matrice3[i][j],matrice3[i+1][j]]);
+                        }
+                    }
+                };
+                
+
+
+                // Draw matrice3 surface
+                /*
+                for (var i = 0; i < matrice3[0].length; i++) {
+
+                    for (var j = 0; j < matrice3.length; j++) {
+
+                        if(i+1 < matrice3[0].length && j+1 < matrice3.length ){
+                            drawPlaneWith4Vertices([matrice3[i][j][0],matrice3[i][j][1],matrice3[i][j][2],
+                                matrice3[i][j+1][0],matrice3[i][j+1][1],matrice3[i][j+1][2],
+                                matrice3[i+1][j+1][0],matrice3[i+1][j+1][1],matrice3[i+1][j+1][2],
+                                matrice3[i+1][j][0],matrice3[i+1][j][1],matrice3[i+1][j][2]]);
+                        }
+                    };
+                };
+                */
+
+
+            }
+
+
+
+        }, true);
 
 
     </script>

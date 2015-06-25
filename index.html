@@ -29,7 +29,8 @@
     <canvas id="renderCanvas"></canvas>
     <script>
 
-    var matrice3 = [[]];
+        var matrice3 = [[]];
+        var linePositionsChaikin = [];
 
         
         var canvas = document.getElementById("renderCanvas");
@@ -128,6 +129,303 @@
           return plane;
         }
 
+
+        function sameNumberOfVeterxBetwinEdgeAxes(){
+            var maxVertexTopBottom = Math.max(currentLinePosition[0].length, currentLinePosition[2].length);
+            var maxVertexLeftRight = Math.max(currentLinePosition[1].length, currentLinePosition[3].length);
+
+
+            if(currentLinePosition[0].length < maxVertexTopBottom){
+                
+                var index = currentLinePosition[0].length-1;
+                
+                while(currentLinePosition[0].length < maxVertexTopBottom) {
+                    
+                    var u = 0.5;
+
+                    if(index-1 <0){
+                        index = currentLinePosition[0].length-1;
+                    }
+
+                    var point = [currentLinePosition[0][index-1][0]*(1-u)+currentLinePosition[0][index][0]*u, currentLinePosition[0][index-1][1]*(1-u)+currentLinePosition[0][index][1]*u, currentLinePosition[0][index-1][2]*(1-u)+currentLinePosition[0][index][2]*u];
+
+                    currentLinePosition[0].splice(index,0,point);
+
+                    index -= 2;
+
+                }
+  
+            }
+
+            if(currentLinePosition[2].length < maxVertexTopBottom){
+
+                var index = currentLinePosition[2].length-1;
+                
+                while(currentLinePosition[2].length < maxVertexTopBottom) {
+                    
+                    var u = 0.5;
+
+                    if(index-1 <0){
+                        index = currentLinePosition[2].length-1;
+                    }
+
+                    var point = [currentLinePosition[2][index-1][0]*(1-u)+currentLinePosition[2][index][0]*u, currentLinePosition[2][index-1][1]*(1-u)+currentLinePosition[2][index][1]*u, currentLinePosition[2][index-1][2]*(1-u)+currentLinePosition[2][index][2]*u];
+
+                    currentLinePosition[2].splice(index,0,point);
+
+                    index -= 2;
+
+                }
+
+            }
+
+            if(currentLinePosition[1].length < maxVertexLeftRight){
+
+                var index = currentLinePosition[1].length-1;
+                
+                while(currentLinePosition[1].length < maxVertexLeftRight) {
+                    
+                    var u = 0.5;
+
+                    if(index-1 <0){
+                        index = currentLinePosition[1].length-1;
+                    }
+
+                    var point = [currentLinePosition[1][index-1][0]*(1-u)+currentLinePosition[1][index][0]*u, currentLinePosition[1][index-1][1]*(1-u)+currentLinePosition[1][index][1]*u, currentLinePosition[1][index-1][2]*(1-u)+currentLinePosition[1][index][2]*u];
+
+                    currentLinePosition[1].splice(index,0,point);
+
+                    index -= 2;
+
+                }
+
+            }
+
+            if(currentLinePosition[3].length < maxVertexLeftRight){
+
+                var index = currentLinePosition[3].length-1;
+                
+                while(currentLinePosition[3].length < maxVertexLeftRight) {
+                    
+                    var u = 0.5;
+
+                    if(index-1 <0){
+                        index = currentLinePosition[3].length-1;
+                    }
+
+                   var point = [currentLinePosition[3][index-1][0]*(1-u)+currentLinePosition[3][index][0]*u, currentLinePosition[3][index-1][1]*(1-u)+currentLinePosition[3][index][1]*u, currentLinePosition[3][index-1][2]*(1-u)+currentLinePosition[3][index][2]*u];
+
+                    currentLinePosition[3].splice(index,0,point);
+
+                    index -= 2;
+
+                }
+
+            }
+
+        }
+
+
+        function displayCoons(){
+
+
+                var TopToBottomPositions = [];
+                var v = 0;
+                var u = 0;
+
+                var matrice1 = [[]];
+
+                
+                // Matrice1
+                for(var i = 0; i < linePositionsChaikin[0].length; i++){
+
+                    TopToBottomPositions.push(linePositionsChaikin[0][i]);
+                    matrice1[0][i] = linePositionsChaikin[0][i];
+
+                    for(var j = 1; j < linePositionsChaikin[1].length-1; j++){
+
+                        v = j/(linePositionsChaikin[1].length-1);
+
+                        var point = [linePositionsChaikin[0][i][0]*(1-v)+linePositionsChaikin[2][i][0]*v,
+                                     linePositionsChaikin[0][i][1]*(1-v)+linePositionsChaikin[2][i][1]*v, 
+                                     linePositionsChaikin[0][i][2]*(1-v)+linePositionsChaikin[2][i][2]*v];
+                        
+                        
+            
+                        if(j>matrice1.length-1){
+                            matrice1[j] = [];
+                        }
+                        matrice1[j][i] = point;
+                        
+                    }
+
+                    if(linePositionsChaikin[1].length-1>matrice1.length-1){
+                        matrice1[linePositionsChaikin[1].length-1] = [];
+                    }
+
+
+                    matrice1[linePositionsChaikin[1].length-1][i] = linePositionsChaikin[2][i];            
+                }
+
+
+
+
+
+                // Draw matrice1
+                console.log("matrice1.lengt: "+matrice1.length);
+                console.log(matrice1);
+                console.log("drawMatrice1");
+
+                
+                /*
+                
+                for (var i = 0; i < matrice1.length; i++) {
+
+                    for (var j = 0; j < matrice1[0].length; j++) {
+                        currentSphere = BABYLON.Mesh.CreateSphere("sphere", 2, 2, scene);
+                        currentSphere.scaling = new BABYLON.Vector3(0.2,0.2,0.2);
+                        console.log("matrice1["+i+"]["+j+"]");
+                        currentSphere.position.x = matrice1[i][j][0];
+                        currentSphere.position.y = matrice1[i][j][1];
+                        currentSphere.position.z = matrice1[i][j][2];
+                    };
+                };
+
+                */
+                
+                
+
+
+                
+
+
+                var matrice2 = [[]];
+
+                for (var i=0; i<matrice1.length; i++) {
+                  matrice2[i]= [];
+                    
+                  for (var j=0; j<matrice1[0].length; j++) {
+                     matrice2[i][j]= [0,0,0];
+                  }
+                }
+
+
+                // Matrice2
+                for(var j = 0; j < linePositionsChaikin[3].length; j++){
+
+                    matrice2[j][0] = linePositionsChaikin[3][j];
+
+                    for(var i = 1; i < linePositionsChaikin[0].length-1; i++){
+
+                        u = i/(linePositionsChaikin[0].length-1);
+
+                        var point = [linePositionsChaikin[3][j][0]*(1-u)+linePositionsChaikin[1][j][0]*u,
+                                     linePositionsChaikin[3][j][1]*(1-u)+linePositionsChaikin[1][j][1]*u, 
+                                     linePositionsChaikin[3][j][2]*(1-u)+linePositionsChaikin[1][j][2]*u];
+                        
+                        matrice2[j][i] = point;
+                        
+                    }
+
+                    matrice2[j][linePositionsChaikin[0].length-1] = linePositionsChaikin[1][j];            
+                }
+
+
+
+
+                // Draw matrice2
+                
+                /*
+                
+                
+                for (var i = 0; i < matrice2.length; i++) {
+
+                    for (var j = 0; j < matrice2[0].length; j++) {
+                        currentSphere = BABYLON.Mesh.CreateSphere("sphere", 2, 2, scene);
+                        currentSphere.scaling = new BABYLON.Vector3(0.2,0.2,0.2);
+                        console.log("matrice2["+i+"]["+j+"]");
+                        currentSphere.position.x = matrice2[i][j][0];
+                        currentSphere.position.y = matrice2[i][j][1];
+                        currentSphere.position.z = matrice2[i][j][2];
+                    };
+                };
+                
+                */
+                
+
+                
+
+                var matrice3 = [[]];
+
+                for (var i=0; i<matrice1.length; i++) {
+                  matrice3[i]= [];
+                    
+                  for (var j=0; j<matrice1[0].length; j++) {
+                     matrice3[i][j]= [0,0,0];
+                  }
+                }
+
+                console.log(matrice3);
+
+                for (var i = 0; i < matrice1.length; i++) {
+
+                    u = i/(linePositionsChaikin[1].length-1);
+
+                    for (var j = 0; j < matrice1[0].length; j++) {
+
+                        
+                        v = j/(linePositionsChaikin[0].length-1);
+
+                        var NpX  = (1-v)*linePositionsChaikin[2][0][0]+v*linePositionsChaikin[2][linePositionsChaikin[2].length-1][0];
+                        var NpY  = (1-v)*linePositionsChaikin[2][0][1]+v*linePositionsChaikin[2][linePositionsChaikin[2].length-1][1];
+                        var NpZ  = (1-v)*linePositionsChaikin[2][0][2]+v*linePositionsChaikin[2][linePositionsChaikin[2].length-1][2];
+
+                        var MpX  = (1-v)*linePositionsChaikin[0][0][0]+v*linePositionsChaikin[0][linePositionsChaikin[0].length-1][0];
+                        var MpY  = (1-v)*linePositionsChaikin[0][0][1]+v*linePositionsChaikin[0][linePositionsChaikin[0].length-1][1];
+                        var MpZ  = (1-v)*linePositionsChaikin[0][0][2]+v*linePositionsChaikin[0][linePositionsChaikin[0].length-1][2];
+
+                        var theFormuleX = u*NpX+(1-u)*MpX;
+                        var theFormuleY = u*NpY+(1-u)*MpY;
+                        var theFormuleZ = u*NpZ+(1-u)*MpZ;
+
+                        var point = [matrice1[i][j][0]+matrice2[i][j][0] - theFormuleX,
+                                     matrice1[i][j][1]+matrice2[i][j][1] - theFormuleY, 
+                                     matrice1[i][j][2]+matrice2[i][j][2] - theFormuleZ];
+
+                        
+                        matrice3[i][j] = point;
+
+                    };
+                };
+
+
+                for (var i = 0; i < matrice3.length; i++) {
+
+                    for (var j = 0; j < matrice3[0].length; j++) {
+
+                        if(j+1 < matrice3[0].length-1){
+                            drawLineWithPositions([matrice3[i][j],matrice3[i][j+1]]);
+                        }
+                    };
+                };
+
+                for (var i = 0; i < matrice3.length; i++) {
+
+                    for (var j = 0; j < matrice3[0].length; j++) {
+
+                        if(i+1 < matrice3.length-1){
+                            drawLineWithPositions([matrice3[i][j],matrice3[i+1][j]]);
+                        }
+                    };
+                };
+
+               
+                
+
+                
+
+
+        }
 
 
 
@@ -283,8 +581,6 @@
 
 
 
-
-
         
 
 
@@ -366,34 +662,86 @@
                 edge++;
                 console.log(edge);
 
-                if(edge > 3){
 
-                    console.log("edddddgggggggeee");
 
-                    if(currentLinePosition.length){
-                        //
+                if(edge ==5){
+
+                    
+
+
+                   
+
+
+                    if(currentLinePosition.length<4){
+                        currentLinePosition[3] = [];
+                        currentLinePosition[3][0] = currentLinePosition[2][currentLinePosition[2].length-1];
+                    }
+
+                    currentLinePosition[3].push([0,0,0]);
+
+                    sameNumberOfVeterxBetwinEdgeAxes();
+                    currentLinePosition[2].reverse();
+                    currentLinePosition[3].reverse();
+
+
+
+
+
+
+
+
+                    for(var i =0; i < currentLine.length; i++){
+                        currentLine[i].dispose();
                     }
 
 
-                    console.log(edge-2);
-                    console.log(currentLinePosition);
-                    currentLinePosition[edge-1].push([0,0,0]);
-
-                    
-                    for (var i = 0; i < currentLinePosition.length-1; i++) {
+                    for (var i = 0; i < currentLinePosition.length; i++) {
+                        
                         if(i < currentLine.count-1){
                             currentLine[i].dispose();
                         }
-                        else{
+                        if(i > currentLine.count-1){
                             currentLine.push([]);
                         }
                         
-                        var chaikinPositions =  getLineChaikinPositionsVector3(currentLinePosition[i],3);
-                        currentLine[i] = drawLineWithPositions(chaikinPositions);
+                        
+                        linePositionsChaikin[i] =  getLineChaikinPositionsVector3(currentLinePosition[i],3);
+                        currentLine[i] = drawLineWithPositions(linePositionsChaikin[i]);
                         currentLine[i].color = currentLineColors[i];
+                        
                     }
-                    return;
+
+
+
+
+                    gridXYMaterial.alpha = 0;
+                    gridZMaterial.alpha = 0;
+
+
+                    var center = [];
+                    var u = 0.5;
+
+                    center[0] = [currentLinePosition[0][0][0]*(1-u)+currentLinePosition[2][currentLinePosition[2].length-1][0]*u, currentLinePosition[0][0][1]*(1-u)+currentLinePosition[2][currentLinePosition[2].length-1][1]*u, currentLinePosition[0][0][2]*(1-u)+currentLinePosition[2][currentLinePosition[2].length-1][2]*u];
+
+                    center[1] = [currentLinePosition[2][0][0]*(1-u)+currentLinePosition[0][currentLinePosition[0].length-1][0]*u, currentLinePosition[2][0][1]*(1-u)+currentLinePosition[0][currentLinePosition[0].length-1][1]*u, currentLinePosition[2][0][2]*(1-u)+currentLinePosition[0][currentLinePosition[0].length-1][2]*u];
+
+                    center[3] = [center[0][0]*(1-u)+center[1][0]*u,center[0][1]*(1-u)+center[1][1]*u, center[0][2]*(1-u)+center[1][2]*u];
+
+                    camera.target.x = center[3][0];
+                    camera.target.y = center[3][1];
+                    camera.target.z = center[3][2];
+
                     
+
+
+                    return;
+
+                    
+                }
+
+                if(edge == 6){
+                    displayCoons();
+                    return;
                 }
 
 
@@ -612,18 +960,6 @@
 
                     };
                 };
-
-
-
-
-
-
-
-                
-                
-
-               
-                
                 
                 
 
@@ -679,6 +1015,39 @@
                 };
                 */
 
+
+            }
+
+            if ((e.keyCode || e.which) == 69) {
+                
+                 currentLinePosition[0] = [];
+                currentLinePosition[0][0] = [0,0,0];
+                currentLinePosition[0][1] = [2,2,-1];
+                currentLinePosition[0][2] = [7,3,-1];
+
+                currentLinePosition[1] = [];
+                currentLinePosition[1][0] = [7,3,-1];
+                currentLinePosition[1][1] = [6,5,-5];
+                currentLinePosition[1][2] = [7,7,-8];
+
+                currentLinePosition[2] = [];
+                currentLinePosition[2][0] = [7,7,-8];
+                currentLinePosition[2][1] = [5,8,-9];
+                currentLinePosition[2][2] = [3,6,-11];
+                currentLinePosition[2][3] = [2,9,-13];
+
+
+                currentLinePosition[3] = [];
+                currentLinePosition[3][0] = [2,9,-13];
+                currentLinePosition[3][1] = [-4,9,-6];
+                currentLinePosition[3][2] = [0,0,0];
+
+                sameNumberOfVeterxBetwinEdgeAxes();
+
+                drawLineWithPositions(currentLinePosition[0]);
+                drawLineWithPositions(currentLinePosition[1]);
+                drawLineWithPositions(currentLinePosition[2]);
+                drawLineWithPositions(currentLinePosition[3]);
 
             }
 
